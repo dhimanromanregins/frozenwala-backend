@@ -1,0 +1,102 @@
+ {% include 'backend/header.html' %}
+   {% include 'backend/sidebar.html' %}
+
+
+ {% load static %}
+
+{% block content %}
+  <div class="content-wrapper">
+    <div class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1 class="m-0"> Customer Coupon Details</h1>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header">
+                <div class="col-12 ">
+                <a href="{%  url 'add_customer_coupon' %}"><button class="btn btn-success btn-sm"><i class="fa fa-plus"></i> Add  </button></a>
+
+              </div>
+                <h3 class="card-title">List of Customer Coupons</h3>
+              </div>
+              <!-- /.card-header -->
+              <div class="card-body">
+                <table id="couponTable" class="table table-bordered table-striped">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Coupon Name</th>
+                      <th>Occasion Name</th>
+                      <th>Start Date</th>
+                      <th>Expire Date</th>
+                      <th>Coupon Value(Percentage)</th>
+                      <th>Coupon Type</th>
+                      <th>Description</th>
+                      <th>Image</th>
+<!--                      <th>Status</th>-->
+                      <th>Action</th>
+
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for coupon in coupons %}
+                      <tr>
+                        <td>{{ coupon.id }}</td>
+                        <td>{{ coupon.coupon }}</td>
+                        <td>{{ coupon.occasion}}</td>
+                        <td>{{ coupon.start_date }}</td>
+                        <td>{{ coupon.expire_date }}</td>
+                        <td>{{ coupon.coupon_value }} %</td>
+                        <td>{{ coupon.coupon_type }}</td>
+                        <td>{{ coupon.description }}</td>
+                        <td>{% if coupon.image %}
+                <img src="{{ coupon.image.url }}" alt="Item Image" width="100" height="70">
+                {% else %}
+        <img src=" {%  static 'assets/images/Frozenwala logo.png' %} " alt="Image" width="100"
+                {% endif %}</td>
+<!--                         <td>{% if coupon.status %}-->
+<!--               <a href="{% url 'customer_couponlist/deactivate_coupon' coupon.id %}" class="btn btn-danger text-white">Deactivate</a>-->
+<!--            {% else %}-->
+<!--               <a href="{% url 'customer_couponlist/activate_coupon' coupon.id %}" class="btn btn-success text-white">Activate</a>-->
+<!--            {% endif %}</td>-->
+
+
+                        <td>
+      <a href="{% url 'customer_couponlist/delete_item' coupon.id %}" ><i style="color: #ff9900;" class="fa fa-trash"></i></a>
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+          </div>
+          <!-- /.col -->
+        </div>
+        <!-- /.row -->
+      </div>
+      <!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+  </div>
+{% endblock %}
+
+{% block script %}
+  <script>
+    $(document).ready(function () {
+      $('#couponTable').DataTable();
+    });
+  </script>
+{% endblock %}
+{% include 'backend/footer.html' %}
