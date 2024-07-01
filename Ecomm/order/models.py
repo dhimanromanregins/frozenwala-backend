@@ -41,4 +41,4 @@ class Order(models.Model):
     delivery_price=models.CharField(max_length=50)
 
     def __str__(self):
-        return  f"{self.user_id}"
+        return  f"{self.id}"
