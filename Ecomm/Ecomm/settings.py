@@ -118,23 +118,16 @@ WSGI_APPLICATION = 'Ecomm.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'u282720346_appFrozenwala',
-        'USER': 'u282720346_appFrozenUsr',
-        'PASSWORD': '#F[r2VrFz4',
-        'HOST': '82.197.82.25',
+        'NAME': 'frozenwaladb',
+        'USER': 'frozenusr',
+        'PASSWORD': 'frozenwala@123',
+        'HOST': '65.1.216.110',
         'PORT': '3306',
     }
 }
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
 
 
-#
-# Password validation
+
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
