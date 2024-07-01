@@ -190,7 +190,7 @@ def update_status(request, id):
         # Send notification to the user if the status has changed
         if selected_status != 1:
             uid=CustomUser.objects.get(id=order.user_id.id)
-            registration_id = uid.registration_id  # Assuming you have a User model associated with the order
+            registration_id = uid.registration_id if uid.registration_id else 0 # Assuming you have a User model associated with the order
             if selected_status == 2:
                 title = "Order Confirmed"
                 message = "Your order has been confirmed."
