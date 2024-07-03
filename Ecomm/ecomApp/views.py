@@ -15,6 +15,13 @@ from django.shortcuts import render
 from menu_management.models import Item
 from django.db.models import Count, Avg
 # Create your views here.
+from collections import defaultdict
+from datetime import datetime, timedelta
+from django.contrib.auth.decorators import login_required
+from django.db.models import Count, Avg, Sum, F, Window, Subquery, OuterRef
+from django.db.models.functions import RowNumber
+from django.shortcuts import render
+
 @login_required(login_url='backend/login')
 def dashboard(request):
     if request.method == 'GET':
@@ -89,22 +96,23 @@ def dashboard(request):
         queryset = Order.objects.exclude(payment_id="")
 
         # Subquery to get the latest order for each payment_id using Window function
-        queryset = queryset.annotate(
+        annotated_queryset = queryset.annotate(
             row_number=Window(
                 expression=RowNumber(),
                 partition_by=F('payment_id'),
                 order_by=F('created_at').desc()
             )
-        ).filter(row_number=1)
+        )
+        filtered_queryset = annotated_queryset.filter(row_number=1)
 
         if order_type:
-            queryset = queryset.filter(pick_up=order_type)
+            filtered_queryset = filtered_queryset.filter(pick_up=order_type)
 
         if from_date and to_date:
             to_date = to_date + timedelta(days=1)
-            queryset = queryset.filter(created_at__range=(from_date, to_date))
+            filtered_queryset = filtered_queryset.filter(created_at__range=(from_date, to_date))
 
-        day_wise_report = queryset.values('created_at') \
+        day_wise_report = filtered_queryset.values('created_at') \
             .annotate(total_amount=Sum('total_price')) \
             .order_by('created_at')
 
