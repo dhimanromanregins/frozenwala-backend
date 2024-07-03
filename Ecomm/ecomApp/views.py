@@ -22,12 +22,11 @@ def dashboard(request):
         from_date = request.GET.get('from_date', None)
         to_date = request.GET.get('to_date', None)
 
-        # Convert date strings to datetime objects if provided
         if from_date:
             from_date = datetime.strptime(from_date, '%Y-%m-%d')
         if to_date:
             to_date = datetime.strptime(to_date, '%Y-%m-%d')
-        else:  # If to_date is not provided, set it to today
+        else:
             to_date = datetime.now()
 
         if not from_date:
@@ -42,7 +41,6 @@ def dashboard(request):
             to_date = to_date + timedelta(days=1)
             queryset = queryset.filter(created_at__range=(from_date, to_date))
 
-        # Perform aggregation and ordering
         day_wise_report = queryset.values('order_id', 'created_at', 'total_price') \
             .annotate(
                 total_items=Count('id'),
@@ -59,7 +57,7 @@ def dashboard(request):
             created_at = entry['created_at'].strftime('%Y-%m-%d')
             total_making_price = entry['total_making_price']
             total_price = entry['total_price']
-            delivery_price = float(entry.get('delivery_price', 0))  # Use get() to avoid KeyError
+            delivery_price = float(entry.get('delivery_price', 0))
 
             if order_id not in unique_orders:
                 unique_orders[order_id] = {
@@ -85,24 +83,18 @@ def dashboard(request):
 
         day_wise_report = [{'order_id': key, **value} for key, value in unique_orders.items()]
 
-        # Filter orders based on the provided parameters
-        queryset = Order.objects.exclude(payment_id="")
-
-        # Subquery to get the latest order for each payment_id
-        latest_orders = Order.objects.filter(
-            payment_id=OuterRef('payment_id')
-        ).order_by('-created_at').values('id')[:1]
-
-        queryset = queryset.filter(id__in=Subquery(latest_orders))
+        latest_orders = Order.objects.annotate(
+            max_created_at=Max('created_at')
+        ).filter(created_at=F('max_created_at')).distinct('payment_id')
 
         if order_type:
-            queryset = queryset.filter(pick_up=order_type)
+            latest_orders = latest_orders.filter(pick_up=order_type)
 
         if from_date and to_date:
             to_date = to_date + timedelta(days=1)
-            queryset = queryset.filter(created_at__range=(from_date, to_date))
+            latest_orders = latest_orders.filter(created_at__range=(from_date, to_date))
 
-        day_wise_report = queryset.values('created_at') \
+        day_wise_report = latest_orders.values('created_at') \
             .annotate(total_amount=Sum('total_price')) \
             .order_by('created_at')
 
@@ -118,16 +110,10 @@ def dashboard(request):
 
         day_wise_report = [{'created_at': key, **value} for key, value in unique_dates.items()]
 
-        # Retrieve total number of CustomUser
         total_custom_users = CustomUser.objects.count()
-
-        # Retrieve total number of Item
         total_items = Item.objects.count()
-
-        # Retrieve total number of unique payment_id of Order
         total_unique_payment_ids = Order.objects.exclude(payment_id="").values('payment_id').distinct().count()
 
-        # Retrieve total of total_price of Order with unique payment_id
         distinct_payment_ids = Order.objects.exclude(payment_id="").values('payment_id').distinct()
         total_order_prices = 0
 
