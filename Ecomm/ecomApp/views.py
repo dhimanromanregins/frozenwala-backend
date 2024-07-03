@@ -96,14 +96,11 @@ def dashboard(request):
         queryset = Order.objects.exclude(payment_id="")
 
         # Subquery to get the latest order for each payment_id using Window function
-        annotated_queryset = queryset.annotate(
-            row_number=Window(
-                expression=RowNumber(),
-                partition_by=F('payment_id'),
-                order_by=F('created_at').desc()
-            )
-        )
-        filtered_queryset = annotated_queryset.filter(row_number=1)
+        subquery = queryset.filter(payment_id=OuterRef('payment_id')) \
+            .order_by('-created_at') \
+            .values('id')[:1]
+
+        filtered_queryset = queryset.filter(id__in=Subquery(subquery))
 
         if order_type:
             filtered_queryset = filtered_queryset.filter(pick_up=order_type)
