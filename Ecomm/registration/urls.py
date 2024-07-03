@@ -13,5 +13,6 @@ urlpatterns = [
     path('api/delete_account/', DeleteAccountAPI.as_view(), name='delete_account'),
     path('api/signout/', SignOutAPI.as_view(), name='signout'),
     path('api/send_sms/', send_sms, name='send_sms'),
+    path('api/login-send_sms/', loginsend_sms, name='loginsend_sms'),
 
 ]
