@@ -401,16 +401,11 @@ def send_sms(request):
         # Extract the parameters from the request
         apikey = "NGI0ZjQzMzA2MTZjNjc1NDUzNTA3MDQ1NGI1ODczNWE="
         sender_name = "FRZWLA"
+        # recipient_number = request.POST.get('recipient_number')  # Extract from request
         request_data = json.loads(request.body.decode('utf-8'))
         recipient_number = request_data.get('phone_number')
-
-        # Check if the phone number already exists in CustomUser
-        if CustomUser.objects.filter(phone_number=recipient_number).exists():
-            return JsonResponse({'error': 'Phone number already exists','status':'400'}, status=400)
-
         otp = generate_otp()
         message = f'{otp} is your signin OTP for Frozenwala account. Please apply this within 2min.'
-
         otp_instance, created = Otp.objects.get_or_create(phone_number=recipient_number)
 
         # If the record already exists, update the OTP value
@@ -422,53 +417,11 @@ def send_sms(request):
         else:
             otp_instance.otp = otp
             otp_instance.otp_created_at = timezone.now()
-            otp_instance.save()
-
-        # Call the send_otp function
+            otp_instance.save()        # Call the send_otp function
         response = sendSMS(apikey, recipient_number, sender_name, message)
 
         # Return a JSON response
-        return JsonResponse({'status': 'success'})
-    else:
-        # Return an error response if the request method is not POST
-        return JsonResponse({'error': 'Invalid request method'}, status=400)
-
-@csrf_exempt
-def loginsend_sms(request):
-    if request.method == 'POST':
-        # Extract the parameters from the request
-        apikey = "NGI0ZjQzMzA2MTZjNjc1NDUzNTA3MDQ1NGI1ODczNWE="
-        sender_name = "FRZWLA"
-
-        # Load the request data
-        request_data = json.loads(request.body.decode('utf-8'))
-        recipient_number = request_data.get('phone_number')
-
-        # Validate if the phone_number exists in the CustomUser model
-        if not CustomUser.objects.filter(phone_number=recipient_number).exists():
-            return JsonResponse({'error': 'Phone number not found in user records','status':'400'}, status=400)
-
-        otp = generate_otp()
-        message = f'{otp} is your signin OTP for Frozenwala account. Please apply this within 2min.'
-
-        otp_instance, created = Otp.objects.get_or_create(phone_number=recipient_number)
-
-        # If the record already exists, update the OTP value
-        if not created:
-            otp_instance.otp = otp
-            otp_instance.otp_created_at = timezone.now()
-            otp_instance.save()
-        # If the record doesn't exist, create a new OTP record
-        else:
-            otp_instance.otp = otp
-            otp_instance.otp_created_at = timezone.now()
-            otp_instance.save()
-
-        # Call the send_otp function
-        response = sendSMS(apikey, recipient_number, sender_name, message)
-
-        # Return a JSON response
-        return JsonResponse({'status': 'success'})
+        return JsonResponse({ 'status': 'success'})
     else:
         # Return an error response if the request method is not POST
         return JsonResponse({'error': 'Invalid request method'}, status=400)
