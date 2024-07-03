@@ -88,14 +88,12 @@ def dashboard(request):
         # Filter orders based on the provided parameters
         queryset = Order.objects.exclude(payment_id="")
 
-        # Subquery to get the latest order for each payment_id using Window function
-        queryset = queryset.annotate(
-            row_number=Window(
-                expression=RowNumber(),
-                partition_by=F('payment_id'),
-                order_by=F('created_at').desc()
-            )
-        ).filter(row_number=1)
+        # Subquery to get the latest order for each payment_id
+        latest_orders = Order.objects.filter(
+            payment_id=OuterRef('payment_id')
+        ).order_by('-created_at').values('id')[:1]
+
+        queryset = queryset.filter(id__in=Subquery(latest_orders))
 
         if order_type:
             queryset = queryset.filter(pick_up=order_type)
@@ -162,6 +160,7 @@ def dashboard(request):
         })
 
     return render(request, 'backend/dashboard.html')
+    
 @login_required(login_url='backend/login')
 def charts(request):
     return render(request,"backend/charts.html")
