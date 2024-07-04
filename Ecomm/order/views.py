@@ -173,7 +173,8 @@ def update_status(request, id):
         except (TypeError, ValueError):
             # Handle the case where selected_status_str is not a valid integer
             messages.error(request, 'Invalid status value!')
-            return redirect(request.META.get('HTTP_REFERER', 'fallback_url'))
+            # return redirect(request.META.get('HTTP_REFERER', 'fallback_url'))
+            return redirect('orderapp')  # Redirect to order list page on error
 
         order = Order.objects.get(id=id)
 
@@ -190,7 +191,7 @@ def update_status(request, id):
         # Send notification to the user if the status has changed
         if selected_status != 1:
             uid=CustomUser.objects.get(id=order.user_id.id)
-            registration_id = uid.registration_id if uid.registration_id else 0 # Assuming you have a User model associated with the order
+            registration_id = uid.registration_id if uid.registration_id else 0
             if selected_status == 2:
                 title = "Order Confirmed"
                 message = "Your order has been confirmed."
@@ -218,7 +219,7 @@ def update_status(request, id):
 
         messages.success(request, 'Status updated successfully!')
 
-    return redirect(request.META.get('HTTP_REFERER', 'fallback_url'))  # Replace with your actual redirect URL
+    return redirect('orderapp')  # Redirect to order list page on error
 
 
 razorpay_client = razorpay.Client(auth=(settings.RAZORPAY_API_KEY, settings.RAZORPAY_SECRET_KEY))
@@ -346,12 +347,16 @@ def verify_payment(request):
             if cart_walet:
                 cart_walet.delete()
 
-
             alluser = CustomUser.objects.filter(id=user_id)
             userss = alluser.first()
 
             # Get the registration_id of the user
             registration_id = userss.registration_id
+            title = "Order Placed Successfully!"
+            message = "Your order has been successfully placed at FrozenwalaStore."
+            SendNotificationAPI().send_notification(registration_id, title, message)
+
+
 
             return JsonResponse({'message': 'Payment successful'}, status=200)
         except Exception as e:
